@@ -1,0 +1,29 @@
+services:
+  yomilog:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "8000:8000"
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./:/code
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "example"
+      POSTGRES_DB: "yomilog"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d yomilog"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  db-data:
